@@ -1,3 +1,5 @@
+import json
+
 from flask import Flask, render_template
 from flask import request
 import zipfile
@@ -37,7 +39,9 @@ def handler():
         file_obj.save(os.path.join('upload/', cur_name))
     extracted_files = unzip(cur_name)
     print('extracted_files:', extracted_files)
-    return "successfully"
+    response = {"stat": "successfully"}
+    data = json.dumps(response)
+    return data, 200, {"ContentType": "application/json"}
 
 
 def unzip(zip_name):

@@ -3,8 +3,6 @@ import zipfile
 
 app = Flask(__name__)
 
-from test import *
-
 
 @app.route('/')
 def index():
@@ -132,41 +130,41 @@ dic = {
                 }
             ]
         },
-        {
-            "NAME": "备赛报名表Application form 青空计划",
-            "LABELS": {
-                "__label__ACADEMIC": {
-                    "items": [],
-                    "score": 0
-                },
-                "__label__INDUSTRIAL": {
-                    "items": [],
-                    "score": 0
-                },
-                "__label__BUSINESS": {
-                    "items": [
-                        "产业"
-                    ],
-                    "score": 1
-                },
-                "__label__INVESTMENT": {
-                    "items": [],
-                    "score": 0
-                },
-                "__label__PATENTS": {
-                    "items": [
-                        "一等奖"
-                    ],
-                    "score": 1
-                }
-            },
-            "ENTITYS": [
-                {
-                    "name": "一等奖",
-                    "score": 2
-                }
-            ]
-        }
+        # {
+        #     "NAME": "备赛报名表Application form 青空计划",
+        #     "LABELS": {
+        #         "__label__ACADEMIC": {
+        #             "items": [],
+        #             "score": 0
+        #         },
+        #         "__label__INDUSTRIAL": {
+        #             "items": [],
+        #             "score": 0
+        #         },
+        #         "__label__BUSINESS": {
+        #             "items": [
+        #                 "产业"
+        #             ],
+        #             "score": 1
+        #         },
+        #         "__label__INVESTMENT": {
+        #             "items": [],
+        #             "score": 0
+        #         },
+        #         "__label__PATENTS": {
+        #             "items": [
+        #                 "一等奖"
+        #             ],
+        #             "score": 1
+        #         }
+        #     },
+        #     "ENTITYS": [
+        #         {
+        #             "name": "一等奖",
+        #             "score": 2
+        #         }
+        #     ]
+        # }
     ]
 }
 
