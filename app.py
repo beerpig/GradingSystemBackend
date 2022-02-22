@@ -1,4 +1,6 @@
 import json
+import dict2json
+import JWT_demo
 
 from flask import Flask, render_template
 from flask import request
@@ -22,6 +24,19 @@ def index():
     return render_template('index.html')
 
 
+@app.route('/login', methods=["POST"])
+def login():
+    req = request
+    str_req_data = req.data.decode('UTF-8')
+    json_req_data = json.loads(str_req_data)
+    username = json_req_data['name']
+    password = json_req_data['pwd']
+    token = JWT_demo.generate_access_token(username)
+    data = {"token": token, "success": "true"}
+    response = json.dumps(data)
+    return response, 200, {"ContentType": "application/text"}
+
+
 @app.route('/handler', methods=["POST"])
 def handler():
     file_obj = request.files.get('file', None)
@@ -39,8 +54,11 @@ def handler():
         file_obj.save(os.path.join('upload/', cur_name))
     extracted_files = unzip(cur_name)
     print('extracted_files:', extracted_files)
-    response = {"stat": "successfully"}
-    data = json.dumps(response)
+    # 把 res 改成生成的数据
+    res = dict2json.dic
+    responses = res
+    responses["msg"] = "successfully"
+    data = json.dumps(responses)
     return data, 200, {"ContentType": "application/json"}
 
 
