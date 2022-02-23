@@ -24,9 +24,17 @@ def index():
     return render_template('index.html')
 
 
+@app.route('/tokenAvailable', methods=["POST"])
+def token_available():
+    req = request
+    print(req)
+    return {'state': 402}, 401
+
+
 @app.route('/login', methods=["POST"])
 def login():
     req = request
+    # request.headers.get('token')
     str_req_data = req.data.decode('UTF-8')
     json_req_data = json.loads(str_req_data)
     username = json_req_data['name']
@@ -34,7 +42,7 @@ def login():
     token = JWT_demo.generate_access_token(username)
     data = {"token": token, "success": "true"}
     response = json.dumps(data)
-    return response, 200, {"ContentType": "application/text"}
+    return response, 200, {"ContentType": "application/json"}
 
 
 @app.route('/handler', methods=["POST"])
