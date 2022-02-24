@@ -45,6 +45,28 @@ def login():
     return response, 200, {"ContentType": "application/json"}
 
 
+@app.route('/register', methods=["POST"])
+def register():
+    req = request
+    str_req_data = req.data.decode('UTF-8')
+    json_req_data = json.loads(str_req_data)
+    username = json_req_data['name']
+    data = {"token": "sdafjsld", "success": "true"}
+    response = json.dumps(data)
+    return response, 200, {"ContentType": "application/json"}
+
+
+@app.route('/captchaLaunch', methods=["POST"])
+def captcha_launch():
+    req = request
+    str_req_data = req.data.decode('UTF-8')
+    json_req_data = json.loads(str_req_data)
+    phone = json_req_data['phone']
+    data = {"token": "sdafjsld", "success": "true"}
+    response = json.dumps(data)
+    return response, 200, {"ContentType": "application/json"}
+
+
 @app.route('/handler', methods=["POST"])
 def handler():
     file_obj = request.files.get('file', None)
