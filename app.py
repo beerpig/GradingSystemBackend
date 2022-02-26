@@ -1,9 +1,11 @@
 import json
 import dict2json
 import JWT_demo
+import pymysql_demo
+import response_result
 
 from flask import Flask, render_template
-from flask import request
+from flask import request, jsonify
 import zipfile
 import time
 import os
@@ -15,6 +17,22 @@ app = Flask(__name__,
             )
 
 CORS(app)
+
+
+@app.before_request
+def before():
+    print(request.path)
+    if request.path == '/login' or request.path == '/getUserName' or request.path.startswith(
+            "/static") or request.path == '/register' or request.path == '/':
+        return None
+    token = request.headers.get('token')
+    user = request.headers.get('user')
+    select_token_sql = "select * from userToken where userName=%s"
+    sql_token = pymysql_demo.select_token(select_token_sql, [user])
+    if token != sql_token:
+        result = response_result.TOKEN_NOPASS
+        # return json.dumps(result), 200, {'content-type': 'application/json'}
+        return jsonify(result)
 
 
 # 主页面
@@ -31,18 +49,29 @@ def token_available():
     return {'state': 402}, 401
 
 
+@app.route('/getUserName', methods=["GET"])
+def get_username():
+    # request.headers.get('token')
+    username = request.args.get('user')
+    print('username:', username)
+    return {'success': 'true'}, 200
+
+
 @app.route('/login', methods=["POST"])
 def login():
     req = request
-    # request.headers.get('token')
     str_req_data = req.data.decode('UTF-8')
     json_req_data = json.loads(str_req_data)
     username = json_req_data['name']
     password = json_req_data['pwd']
     token = JWT_demo.generate_access_token(username)
-    data = {"token": token, "success": "true"}
-    response = json.dumps(data)
-    return response, 200, {"ContentType": "application/json"}
+    sql_login = "select * from user where userName = %s and password = %s"
+    res = pymysql_demo.select_user_login(sql_login, [username, password])
+    if res:
+        result = response_result.LOGIN_SUCCESS
+        # return json.dumps(result), 200, {'content-type': 'application/json'}
+        return jsonify(result)
+    return jsonify(response_result.LOGIN_FAILURE)
 
 
 @app.route('/register', methods=["POST"])
@@ -51,9 +80,15 @@ def register():
     str_req_data = req.data.decode('UTF-8')
     json_req_data = json.loads(str_req_data)
     username = json_req_data['name']
-    data = {"token": "sdafjsld", "success": "true"}
-    response = json.dumps(data)
-    return response, 200, {"ContentType": "application/json"}
+    password = json_req_data['pwd']
+    phone = json_req_data['phone']
+    # captcha = 1111
+    password_md5 = pymysql_demo.encode_(password)
+    sql_register = "insert into user (userName, password, phone, create_time) values (%s, %s, %s, now())"
+    res = pymysql_demo.user_insert(sql_register, [username, password_md5, phone])
+    if res:
+        return jsonify(response_result.REGISTER_SUCCESS)
+    return jsonify(response_result.REGISTER_FAILURE)
 
 
 @app.route('/captchaLaunch', methods=["POST"])
