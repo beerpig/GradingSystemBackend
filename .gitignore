@@ -8,3 +8,5 @@
 /httpRequests/
 /upload/
 
+/__pycache__/
+*.pyc

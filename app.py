@@ -68,9 +68,22 @@ def login():
     sql_login = "select * from user where userName = %s and password = %s"
     res = pymysql_demo.select_user_login(sql_login, [username, password])
     if res:
-        result = response_result.LOGIN_SUCCESS
-        # return json.dumps(result), 200, {'content-type': 'application/json'}
-        return jsonify(result)
+        sql_token_user_select = "select * from user_token where userName = %s"
+        res_token = pymysql_demo.select_token(sql_token_user_select, [username])
+        if res_token:
+            sql_token_user_update = "update user_token set token=%s where userName=%s"
+            res_token_ = pymysql_demo.update_token(sql_token_user_update, [token, username])
+            if res_token_:
+                result = response_result.LOGIN_SUCCESS
+                result['token'] = token
+                return jsonify(result)
+        else:
+            sql_token_user_insert = "insert into user_token (userName, token) values (%s, %s)"
+            res_token_ = pymysql_demo.token_insert(sql_token_user_insert, [username, token])
+            if res_token_:
+                result = response_result.LOGIN_SUCCESS
+                result['token'] = token
+                return jsonify(result)
     return jsonify(response_result.LOGIN_FAILURE)
 
 

@@ -81,7 +81,20 @@ def encode_(str):
     print("加密后：", MD5.hexdigest())
     return MD5.hexdigest()
 
+
 # sql = "select * from user where userName=%s "
 # q = "🍺🐷"
 # res = select_all(sql, q)
 # print(res)
+def update_token(sql, args):
+    conn, cur = create_conn()
+    try:
+        cur.execute(sql, args)
+        conn.commit()
+        close_conn(conn, cur)
+        return True
+    except Exception as e:
+        print("user_token update except", args)
+        conn.rollback()
+        close_conn(conn, cur)
+        return False
