@@ -3,6 +3,7 @@ import dict2json
 import JWT_demo
 import pymysql_demo
 import response_result
+from urllib import parse
 
 from flask import Flask, render_template
 from flask import request, jsonify
@@ -22,16 +23,17 @@ CORS(app)
 @app.before_request
 def before():
     print(request.path)
-    if request.path == '/login' or request.path == '/getUserName' or request.path.startswith(
+    if request.path == '/login' or request.path == '/handler' or request.path == '/favicon.ico' or request.path == '/getUserName' or request.path.startswith(
             "/static") or request.path == '/register' or request.path == '/':
         return None
     token = request.headers.get('token')
-    user = request.headers.get('user')
-    select_token_sql = "select * from userToken where userName=%s"
+    user = request.headers.get('username')
+    user = parse.unquote(user)
+    is_overdue = JWT_demo.identify(token)
+    select_token_sql = "select * from user_token where userName=%s"
     sql_token = pymysql_demo.select_token(select_token_sql, [user])
-    if token != sql_token:
+    if is_overdue != user:
         result = response_result.TOKEN_NOPASS
-        # return json.dumps(result), 200, {'content-type': 'application/json'}
         return jsonify(result)
 
 
@@ -44,9 +46,7 @@ def index():
 
 @app.route('/tokenAvailable', methods=["POST"])
 def token_available():
-    req = request
-    print(req)
-    return {'state': 402}, 401
+    return jsonify(response_result.LOGIN_SUCCESS)
 
 
 @app.route('/getUserName', methods=["GET"])
@@ -134,10 +134,10 @@ def handler():
     print('extracted_files:', extracted_files)
     # 把 res 改成生成的数据
     res = dict2json.dic
-    responses = res
-    responses["msg"] = "successfully"
-    data = json.dumps(responses)
-    return data, 200, {"ContentType": "application/json"}
+    result = response_result.LOGIN_SUCCESS
+    result["msg"] = res
+
+    return jsonify(result)
 
 
 def unzip(zip_name):
