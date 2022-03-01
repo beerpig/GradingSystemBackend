@@ -67,7 +67,21 @@ def select_user_login(sql, args):
         result = cur.execute(sql, args)
         conn.commit()
         close_conn(conn, cur)
-        return True
+        return True if result != 0 else False
+    except Exception as e:
+        print("user select except", args)
+        conn.rollback()
+        close_conn(conn, cur)
+        return False
+
+
+def select_get_user(sql, args):
+    conn, cur = create_conn()
+    try:
+        result = cur.execute(sql, args)
+        conn.commit()
+        close_conn(conn, cur)
+        return True if result == 0 else False
     except Exception as e:
         print("user select except", args)
         conn.rollback()

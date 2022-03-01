@@ -7,6 +7,6 @@
 # Editor-based HTTP Client requests
 /httpRequests/
 /upload/
-
+/.idea/
 /__pycache__/
 **/*.pyc

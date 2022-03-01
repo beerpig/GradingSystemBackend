@@ -52,9 +52,13 @@ def token_available():
 @app.route('/getUserName', methods=["GET"])
 def get_username():
     # request.headers.get('token')
-    username = request.args.get('user')
+    username = request.args.get('username')
     print('username:', username)
-    return {'success': 'true'}, 200
+    sql_get_user = "select * from user where userName = %s"
+    res = pymysql_demo.select_get_user(sql_get_user, [username])
+    if not res:
+        return jsonify(response_result.USERNAME_OCCUPIDE)
+    return jsonify(response_result.LOGIN_SUCCESS)
 
 
 @app.route('/login', methods=["POST"])

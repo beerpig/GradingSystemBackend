@@ -84,5 +84,5 @@ def login_required(f):
 # token = generate_access_token("啤酒猪")
 # print(token)
 # time.sleep(5)
-detoken = identify("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2NDYwNjA4NDMsImZsYWciOjAsImlhdCI6MTY0NjA2MDg0MiwiaXNzIjoibGVvbiIsInVzZXJuYW1lIjoiXHU1NTY0XHU5MTUyXHU3MzJhIn0.9k6XzSknIVcsa6J3RIxTpoXMpRGC-fs4Qjy3zHcjqkc")
-print(detoken)
+# detoken = identify("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE2NDYwNjA4NDMsImZsYWciOjAsImlhdCI6MTY0NjA2MDg0MiwiaXNzIjoibGVvbiIsInVzZXJuYW1lIjoiXHU1NTY0XHU5MTUyXHU3MzJhIn0.9k6XzSknIVcsa6J3RIxTpoXMpRGC-fs4Qjy3zHcjqkc")
+# print(detoken)
