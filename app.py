@@ -4,6 +4,7 @@ import JWT_demo
 import pymysql_demo
 import response_result
 from urllib import parse
+import captcha_message
 
 from flask import Flask, render_template
 from flask import request, jsonify
@@ -19,11 +20,13 @@ app = Flask(__name__,
 
 CORS(app)
 
+captcha_code_g = ''
+
 
 @app.before_request
 def before():
     print(request.path)
-    if request.path == '/login' or request.path == '/favicon.ico' or request.path == '/getUserName' or request.path.startswith(
+    if request.path == '/login' or request.path == '/captchaLaunch' or request.path == '/favicon.ico' or request.path == '/getUserName' or request.path.startswith(
             "/static") or request.path == '/register' or request.path == '/':
         return None
     token = request.headers.get('token')
@@ -68,9 +71,10 @@ def login():
     json_req_data = json.loads(str_req_data)
     username = json_req_data['name']
     password = json_req_data['pwd']
+    password_md5 = pymysql_demo.encode_(password)
     token = JWT_demo.generate_access_token(username)
     sql_login = "select * from user where userName = %s and password = %s"
-    res = pymysql_demo.select_user_login(sql_login, [username, password])
+    res = pymysql_demo.select_user_login(sql_login, [username, password_md5])
     if res:
         sql_token_user_select = "select * from user_token where userName = %s"
         res_token = pymysql_demo.select_token(sql_token_user_select, [username])
@@ -99,12 +103,16 @@ def register():
     username = json_req_data['name']
     password = json_req_data['pwd']
     phone = json_req_data['phone']
-    # captcha = 1111
-    password_md5 = pymysql_demo.encode_(password)
-    sql_register = "insert into user (userName, password, phone, create_time) values (%s, %s, %s, now())"
-    res = pymysql_demo.user_insert(sql_register, [username, password_md5, phone])
-    if res:
-        return jsonify(response_result.REGISTER_SUCCESS)
+    captcha = json_req_data['code']
+    global captcha_code_g
+    if captcha == captcha_code_g:
+        password_md5 = pymysql_demo.encode_(password)
+        sql_register = "insert into user (userName, password, phone, create_time) values (%s, %s, %s, now())"
+        res = pymysql_demo.user_insert(sql_register, [username, password_md5, phone])
+        if res:
+            return jsonify(response_result.REGISTER_SUCCESS)
+        else:
+            return jsonify(response_result.REGISTER_FAILURE_PHONE_REPEAT)
     return jsonify(response_result.REGISTER_FAILURE)
 
 
@@ -114,9 +122,13 @@ def captcha_launch():
     str_req_data = req.data.decode('UTF-8')
     json_req_data = json.loads(str_req_data)
     phone = json_req_data['phone']
-    data = {"token": "sdafjsld", "success": "true"}
-    response = json.dumps(data)
-    return response, 200, {"ContentType": "application/json"}
+    captcha = captcha_message.code_generate()
+    global captcha_code_g
+    captcha_code_g = captcha
+    res = captcha_message.message_generate(captcha_code_g, str(phone))
+    if res:
+        return jsonify(response_result.MESSAGE_LAUNCHED_SUCCESS)
+    return jsonify(response_result.MESSAGE_LAUNCHED_FAILURE)
 
 
 @app.route('/handler', methods=["POST"])

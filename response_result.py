@@ -32,3 +32,17 @@ TOKEN_NOPASS = {
 USERNAME_OCCUPIDE = {
     "code": 10101
 }
+
+# 短信发送成功
+MESSAGE_LAUNCHED_SUCCESS = {
+    "code": 10110
+}
+
+# 短信发送失败
+MESSAGE_LAUNCHED_FAILURE = {
+    "code": 10111
+}
+
+REGISTER_FAILURE_PHONE_REPEAT = {
+    "code": 11000
+}
