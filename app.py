@@ -23,7 +23,7 @@ CORS(app)
 @app.before_request
 def before():
     print(request.path)
-    if request.path == '/login' or request.path == '/handler' or request.path == '/favicon.ico' or request.path == '/getUserName' or request.path.startswith(
+    if request.path == '/login' or request.path == '/favicon.ico' or request.path == '/getUserName' or request.path.startswith(
             "/static") or request.path == '/register' or request.path == '/':
         return None
     token = request.headers.get('token')
