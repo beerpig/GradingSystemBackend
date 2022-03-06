@@ -6,8 +6,9 @@ import response_result
 from urllib import parse
 import captcha_message
 import requests
-import re
+from flask_mail import Mail, Message
 from captcha_tool import CaptchaTool
+import captcha_message
 
 from flask import Flask, render_template
 from flask import request, jsonify, session
@@ -21,16 +22,58 @@ app = Flask(__name__,
             static_folder="/Users/beerpig/Downloads/GradingSystem/frontend/dist/static"
             )
 app.secret_key = 'ae170d1592c60dafd4160462ef24405f'
+# app.config.update(
+#     MAIL_SERVER='smtp.qq.com',
+#     MAIL_PORT=678,
+#     MAIL_USER_TLS=True,
+#     MAIL_USERNAME='1033643944@qq.com',
+#     MAIL_PASSWORD='jpniysebyanhbfjd',
+#     MAIL_DEFAULT_SENDER=('beerpig', '1033643944@qq.com')
+# )
+app.config['MAIL_SERVER'] = 'smtp.qq.com'
+app.config['MAIL_PORT'] = 25
+app.config['MAIL_USER_TLS'] = True
+app.config['MAIL_USERNAME'] = '1033643944@qq.com'
+app.config['MAIL_PASSWORD'] = ''
+app.config['MAIL_DEFAULT_SENDER'] = 'beerpig Admin <1033643944@qq.com>'
 
+mail = Mail(app)
 CORS(app)
 
 captcha_code_g = ''
 
 
+@app.route('/sendMail')
+def send_mail():
+    email = request.args.get('email')
+    msg = Message(subject="Hello World!",
+                  sender="1033643944@qq.com",
+                  recipients=[email])
+    email_code = captcha_message.code_generate()
+    msg.body = 'text body'
+    msg.html = '<b>email_code:{}</b>'.format(email_code)
+    with app.app_context():
+        mail.send(msg)
+    print("success")
+    session["email_code"] = email_code
+    return jsonify(response_result.SEND_EMAIL_SUCCESS)
+
+
+@app.route('/emailValidate', methods=["POST"])
+def email_validate():
+    req = request
+    str_req_data = req.data.decode('UTF-8')
+    json_req_data = json.loads(str_req_data)
+    email = json_req_data['email']
+    code = json_req_data['code']
+    if code == session["email_code"]:
+        return jsonify(response_result.EMAIL_UPDATE_SUCCESS)
+
+
 @app.before_request
 def before():
     print(request.path)
-    if request.path == '/login' or request.path == '/testGetCaptcha' or request.path == '/wechat' or request.path == '/captchaLaunch' or request.path == '/favicon.ico' or request.path == '/getUserName' or request.path.startswith(
+    if request.path == '/login' or request.path == '/sendMail' or request.path == '/testGetCaptcha' or request.path == '/wechat' or request.path == '/captchaLaunch' or request.path == '/favicon.ico' or request.path == '/getUserName' or request.path.startswith(
             "/static") or request.path == '/register' or request.path == '/':
         return None
     token = request.headers.get('token')
@@ -75,6 +118,10 @@ def login():
     json_req_data = json.loads(str_req_data)
     username = json_req_data['name']
     password = json_req_data['pwd']
+    captcha_img_code = json_req_data['code']
+    is_captcha_img_code = test_verify_captcha(captcha_img_code)
+    if not is_captcha_img_code:
+        return jsonify(response_result.LOGIN_CAPTCHA_FAILURE)
     password_md5 = pymysql_demo.encode_(password)
     token = JWT_demo.generate_access_token(username)
     sql_login = "select * from user where userName = %s and password = %s"
@@ -106,13 +153,14 @@ def register():
     json_req_data = json.loads(str_req_data)
     username = json_req_data['name']
     password = json_req_data['pwd']
-    phone = json_req_data['phone']
+    # phone = json_req_data['phone']
+    email = json_req_data['email']
     captcha = json_req_data['code']
-    global captcha_code_g
-    if captcha == captcha_code_g:
+    is_captcha = test_verify_captcha(captcha)
+    if is_captcha:
         password_md5 = pymysql_demo.encode_(password)
-        sql_register = "insert into user (userName, password, phone, create_time) values (%s, %s, %s, now())"
-        res = pymysql_demo.user_insert(sql_register, [username, password_md5, phone])
+        sql_register = "insert into user (userName, password, email, create_time, userType) values (%s, %s, %s, now(), 0)"
+        res = pymysql_demo.user_insert(sql_register, [username, password_md5, email])
         if res:
             return jsonify(response_result.REGISTER_SUCCESS)
         else:
@@ -211,23 +259,13 @@ def test_get_captcha():
     return jsonify(result)
 
 
-@app.route('/testVerifyCaptcha', methods=["POST"])
-def test_verify_captcha():
-    """
-    验证图形验证码
-    :return:
-    """
-    obj = request.get_json(force=True)
-    # 获取用户输入的验证码
-    code = obj.get('code', None)
+def test_verify_captcha(code):
     # 获取session中的验证码
     s_code = session.get("code", None)
     print(code, s_code)
-    if not all([code, s_code]):
-        return "参数错误"
     if code != s_code:
-        return "验证码错误"
-    return "验证成功"
+        return False
+    return True
 
 
 if __name__ == '__main__':

@@ -43,6 +43,22 @@ MESSAGE_LAUNCHED_FAILURE = {
     "code": 10111
 }
 
+
 REGISTER_FAILURE_PHONE_REPEAT = {
     "code": 11000
+}
+
+# 登录失败，验证码错误
+LOGIN_CAPTCHA_FAILURE = {
+    "code": 11001
+}
+
+# 发送邮箱验证码成功
+SEND_EMAIL_SUCCESS = {
+    "code": 11010
+}
+
+# 邮箱更新成功
+EMAIL_UPDATE_SUCCESS = {
+    "code": 11011
 }
