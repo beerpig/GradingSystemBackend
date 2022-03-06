@@ -1,8 +1,8 @@
 import json
-
+# 可以把数据放在这里
 dic = {
     "SCORE": {
-        "AI": 86.0,
+        "AI": 96.0,
         "TRUES": 78,
         "BIAS": 8.0
     },

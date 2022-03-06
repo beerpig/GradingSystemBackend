@@ -5,9 +5,12 @@ import pymysql_demo
 import response_result
 from urllib import parse
 import captcha_message
+import requests
+import re
+from captcha_tool import CaptchaTool
 
 from flask import Flask, render_template
-from flask import request, jsonify
+from flask import request, jsonify, session
 import zipfile
 import time
 import os
@@ -17,6 +20,7 @@ app = Flask(__name__,
             template_folder="/Users/beerpig/Downloads/GradingSystem/frontend/dist",
             static_folder="/Users/beerpig/Downloads/GradingSystem/frontend/dist/static"
             )
+app.secret_key = 'ae170d1592c60dafd4160462ef24405f'
 
 CORS(app)
 
@@ -26,7 +30,7 @@ captcha_code_g = ''
 @app.before_request
 def before():
     print(request.path)
-    if request.path == '/login' or request.path == '/captchaLaunch' or request.path == '/favicon.ico' or request.path == '/getUserName' or request.path.startswith(
+    if request.path == '/login' or request.path == '/testGetCaptcha' or request.path == '/wechat' or request.path == '/captchaLaunch' or request.path == '/favicon.ico' or request.path == '/getUserName' or request.path.startswith(
             "/static") or request.path == '/register' or request.path == '/':
         return None
     token = request.headers.get('token')
@@ -150,6 +154,7 @@ def handler():
     print('extracted_files:', extracted_files)
     # 把 res 改成生成的数据
     res = dict2json.dic
+    # res = json.dumps(res)
     result = response_result.LOGIN_SUCCESS
     result["msg"] = res
 
@@ -173,6 +178,56 @@ def unzip(zip_name):
     zip_file.close()
     extracted_files = [os.path.join(folder_path, f) for f in extract_files]
     return extracted_files
+
+
+@app.route('/wechat', methods=['GET', 'POST'])
+def wechat():
+    app_id = 'wx398a330716af094a'
+    app_secret = 'ae170d1592c60dafd4160462ef24405f'
+    url = 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid={0}&secret={1}'.format(app_id,
+                                                                                                             app_secret)
+    print("url=>", url)
+    resp = requests.get(url)
+    access_token = resp.json()['access_token']
+    print(access_token)
+
+
+@app.route('/testGetCaptcha', methods=["GET"])
+def test_get_captcha():
+    """
+    获取图形验证码
+    :return:
+    """
+    new_captcha = CaptchaTool()
+    # 获取图形验证码
+    img, code = new_captcha.get_verify_code()
+    img = bytes.decode(img)
+    print('img=>', img)
+    # 存入session
+    session["code"] = code
+    print("code=>", code)
+    result = response_result.LOGIN_SUCCESS
+    result["img"] = img
+    return jsonify(result)
+
+
+@app.route('/testVerifyCaptcha', methods=["POST"])
+def test_verify_captcha():
+    """
+    验证图形验证码
+    :return:
+    """
+    obj = request.get_json(force=True)
+    # 获取用户输入的验证码
+    code = obj.get('code', None)
+    # 获取session中的验证码
+    s_code = session.get("code", None)
+    print(code, s_code)
+    if not all([code, s_code]):
+        return "参数错误"
+    if code != s_code:
+        return "验证码错误"
+    return "验证成功"
 
 
 if __name__ == '__main__':
