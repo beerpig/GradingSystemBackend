@@ -62,3 +62,8 @@ SEND_EMAIL_SUCCESS = {
 EMAIL_UPDATE_SUCCESS = {
     "code": 11011
 }
+
+# 邮箱验证码错误
+EMAIL_CODE_FAILURE = {
+    "code": 11100
+}

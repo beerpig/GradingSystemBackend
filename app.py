@@ -10,7 +10,7 @@ from flask_mail import Mail, Message
 from captcha_tool import CaptchaTool
 import captcha_message
 
-from flask import Flask, render_template
+from flask import Flask, render_template, send_from_directory
 from flask import request, jsonify, session
 import zipfile
 import time
@@ -66,15 +66,20 @@ def email_validate():
     json_req_data = json.loads(str_req_data)
     email = json_req_data['email']
     code = json_req_data['code']
-    if code == session["email_code"]:
-        return jsonify(response_result.EMAIL_UPDATE_SUCCESS)
+    username = json_req_data['username']
+    if code == session['email_code']:
+        user_usertype_update_sql = "update user set email=%s, userType=1 where userName=%s"
+        res = pymysql_demo.user_usertype_update(user_usertype_update_sql, [email, username])
+        if res:
+            return jsonify(response_result.EMAIL_UPDATE_SUCCESS)
+    return jsonify(response_result.EMAIL_CODE_FAILURE)
 
 
 @app.before_request
 def before():
     print(request.path)
-    if request.path == '/login' or request.path == '/sendMail' or request.path == '/testGetCaptcha' or request.path == '/wechat' or request.path == '/captchaLaunch' or request.path == '/favicon.ico' or request.path == '/getUserName' or request.path.startswith(
-            "/static") or request.path == '/register' or request.path == '/':
+    if request.path == '/login' or request.path == '/logo.png' or request.path == '/sendMail' or request.path == '/testGetCaptcha' or request.path == '/wechat' or request.path == '/captchaLaunch' or request.path == '/favicon.ico' or request.path == '/getUserName' or request.path.startswith(
+            "/static") or request.path.startswith("/src") or request.path == '/register' or request.path == '/':
         return None
     token = request.headers.get('token')
     user = request.headers.get('username')
@@ -92,6 +97,15 @@ def before():
 @app.route('/index')
 def index():
     return render_template('index.html')
+
+
+@app.route('/src/assets/logo.png')
+def logo():
+    try:
+        return send_from_directory('', 'logo.png')
+    except Exception as e:
+        print(e)
+        return str(e)
 
 
 @app.route('/tokenAvailable', methods=["POST"])
@@ -126,21 +140,26 @@ def login():
     token = JWT_demo.generate_access_token(username)
     sql_login = "select * from user where userName = %s and password = %s"
     res = pymysql_demo.select_user_login(sql_login, [username, password_md5])
-    if res:
+    if res != '':
+        username = res[0]
+        email = res[1]
+        usertype = res[2]
         sql_token_user_select = "select * from user_token where userName = %s"
         res_token = pymysql_demo.select_token(sql_token_user_select, [username])
+        result = response_result.LOGIN_SUCCESS
+        result['username'] = username
+        result['email'] = email
+        result['usertype'] = usertype
         if res_token:
             sql_token_user_update = "update user_token set token=%s where userName=%s"
             res_token_ = pymysql_demo.update_token(sql_token_user_update, [token, username])
             if res_token_:
-                result = response_result.LOGIN_SUCCESS
                 result['token'] = token
                 return jsonify(result)
         else:
             sql_token_user_insert = "insert into user_token (userName, token) values (%s, %s)"
             res_token_ = pymysql_demo.token_insert(sql_token_user_insert, [username, token])
             if res_token_:
-                result = response_result.LOGIN_SUCCESS
                 result['token'] = token
                 return jsonify(result)
     return jsonify(response_result.LOGIN_FAILURE)
