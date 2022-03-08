@@ -67,3 +67,4 @@ EMAIL_UPDATE_SUCCESS = {
 EMAIL_CODE_FAILURE = {
     "code": 11100
 }
+

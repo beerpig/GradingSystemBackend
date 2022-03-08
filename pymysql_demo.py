@@ -134,3 +134,22 @@ def user_usertype_update(sql, args):
         conn.rollback()
         close_conn(conn, cur)
         return False
+
+
+def select_email(sql, args):
+    conn, cur = create_conn()
+    try:
+        cur.execute(sql, args)
+        conn.commit()
+        close_conn(conn, cur)
+        res = cur.fetchall()
+        for r in res:
+            email = r['email']
+        if len(res) == 0:
+            return ''
+        return email
+    except Exception as e:
+        print("user select except", args)
+        conn.rollback()
+        close_conn(conn, cur)
+        return False
