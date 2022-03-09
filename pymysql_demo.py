@@ -153,3 +153,19 @@ def select_email(sql, args):
         conn.rollback()
         close_conn(conn, cur)
         return False
+
+
+def update_pwd(sql, args):
+    conn, cur = create_conn()
+    try:
+        result = cur.execute(sql, args)
+        conn.commit()
+        close_conn(conn, cur)
+        if result == 1:
+            return True
+        return False
+    except Exception as e:
+        print("user select except", args)
+        conn.rollback()
+        close_conn(conn, cur)
+        return False

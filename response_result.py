@@ -68,3 +68,12 @@ EMAIL_CODE_FAILURE = {
     "code": 11100
 }
 
+# 密码更新成功
+PASSWORD_UPDATE_SUCCESS = {
+    "code": 11101
+}
+
+
+PASSWORD_UPDATE_FAILURE = {
+    "code": 11110
+}
