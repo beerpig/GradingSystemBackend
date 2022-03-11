@@ -252,8 +252,11 @@ def captcha_launch():
 
 @app.route('/handler', methods=["POST"])
 def handler():
-    file_obj = request.files.get('file', None)
-    print("file_obj.name:", file_obj.filename)
+    # file_obj = request.files.get('file', None)
+    # print("file_obj.name:", file_obj.filename)
+    for i in range(len(request.files.getlist('files'))):
+        file_obj = request.files.getlist('files')[i]
+        print("file_obj.name:", file_obj.filename)
     timestamp = str(time.time())
     cur_timestamp = timestamp.replace('.', '')
     print(cur_timestamp)
