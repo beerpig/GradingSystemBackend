@@ -8,7 +8,7 @@ from flask import request
 key = "123456"  # secret私钥,可通过配置文件导入
 
 
-def generate_access_token(username: str = "", algorithm: str = 'HS256', exp: float = 1):
+def generate_access_token(username: str = "", algorithm: str = 'HS256', exp: float = 100):
     """
     生成access_token
     :param username: 用户名(自定义部分)

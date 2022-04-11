@@ -1,4 +1,8 @@
 import json
+
+import fitz
+from fitz import Rect
+
 import dict2json
 import JWT_demo
 import pymysql_demo
@@ -10,8 +14,8 @@ from flask_mail import Mail, Message
 from captcha_tool import CaptchaTool
 import captcha_message
 
-from flask import Flask, render_template, send_from_directory
-from flask import request, jsonify, session
+from flask import Flask, render_template, send_from_directory, send_file
+from flask import request, jsonify, session, make_response
 import zipfile
 import time
 import os
@@ -41,6 +45,11 @@ mail = Mail(app)
 CORS(app)
 
 captcha_code_g = ''
+
+
+@app.route("/download/<filename>", methods=["POST"])
+def download_file(filename):
+    return send_file("/Users/beerpig/Downloads/GradingSystem/code.pdf", as_attachment=True)
 
 
 @app.route("/resetPwd", methods=["POST"])
@@ -254,6 +263,8 @@ def captcha_launch():
 def handler():
     # file_obj = request.files.get('file', None)
     # print("file_obj.name:", file_obj.filename)
+    # request.files.getlist('fil')
+    # request.values.getlist('planName')
     for i in range(len(request.files.getlist('files'))):
         file_obj = request.files.getlist('files')[i]
         print("file_obj.name:", file_obj.filename)
@@ -284,6 +295,24 @@ def handler():
     # result["msg"] = res
     # pic是 base64的数据，只要 下面的格式，不要前面的"data:image/png;base64"
     return jsonify(result)
+
+
+def pdf_text(f_path):
+    try:
+        pdf = fitz.open(f_path)
+    except:
+        return
+
+    for idx, page in enumerate(pdf):
+
+        if idx == 0:
+            pix = page.getPixmap()
+            h = pix.h // 4
+            w = pix.w // 2
+        txt = "参考"
+
+        page.add_freetext_annot(Rect(200, 200, h + 100, w + 100), txt)  # Rect是位置 txt是插入文字 我这个不是直接插文字，你找找直接插文字的方法
+    pdf.save('a.pdf')
 
 
 def unzip(zip_name):
