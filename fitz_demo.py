@@ -23,12 +23,16 @@ def pdf_text(f_path, username):
     now = datetime.datetime.today()
     year = now.year
     month = now.month
+    if month < 10:
+        month = '0' + str(month)
     today = now.day
-    page.insert_text((340, 710), str(year), fontname="HT", fontsize=16, color=(0, 0, 0, 1), fill=None, render_mode=0,
+    if today < 10:
+        today = '0' + str(today)
+    page.insert_text((348, 710), str(year), fontname="HT", fontsize=14, color=(0, 0, 0, 1), fill=None, render_mode=0,
                      border_width=1, rotate=0, morph=None, overlay=True)
-    page.insert_text((393, 710), str(month), fontname="HT", fontsize=16, color=(0, 0, 0, 1), fill=None, render_mode=0,
+    page.insert_text((393, 710), str(month), fontname="HT", fontsize=14, color=(0, 0, 0, 1), fill=None, render_mode=0,
                      border_width=1, rotate=0, morph=None, overlay=True)
-    page.insert_text((423, 710), str(today), fontname="HT", fontsize=16, color=(0, 0, 0, 1), fill=None, render_mode=0,
+    page.insert_text((422, 710), str(today), fontname="HT", fontsize=14, color=(0, 0, 0, 1), fill=None, render_mode=0,
                      border_width=1, rotate=0, morph=None, overlay=True)
     doc.save(r"a.pdf", garbage=4, deflate=True)
 
